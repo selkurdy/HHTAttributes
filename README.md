@@ -97,6 +97,9 @@ An alternative to Fourier Transform and Wavelet Transform  is *instantaneous fre
 
 ## **__Seismic Interpretation Considerations__**
 + **Uses for the Trend volume**:
+  > > >  The residual trend volume can be used by the QI team to guide the low frequency background model.
 + **Multi volume interpretation of IMFs**:
+  >>> The various IMF segys can be loaded on to workstations and be used in multivolume interpretation, analogous to using angle stacks for interpretation.
 + **Identification of multiples generating geologic intervals**:
-+ 
+  >>> Noticing that multiples are seen on some IMFs and in localized spatial areas, might be a tool to identify the frequencies of multiples and aid in the identification of multiple generators both spatially and temporally. 
+  
