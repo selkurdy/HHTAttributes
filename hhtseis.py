@@ -158,11 +158,12 @@ def inst_attributes(tr,freq_sample=500,smoothwlen=11):
 
 def getcommandline():
     """Main."""
-    parser = argparse.ArgumentParser(description='Autoencode seismic to detect both amplitude and phase anomalies')
+    parser = argparse.ArgumentParser(description='Hilbert Huang Transform: Empirical Mode Decomposition generating Intrinsic Mode Functions
+')
     parser.add_argument('segyfile', help='segy file name')
-    parser.add_argument('--xhdr',type=int,default=73,help='xcoord header.default=73')
-    parser.add_argument('--yhdr',type=int,default=77,help='ycoord header. default=77')
-    parser.add_argument('--xyscalerhdr',type=int,default=71,help='hdr of xy scaler to divide by.default=71')
+    # parser.add_argument('--xhdr',type=int,default=73,help='xcoord header.default=73')
+    # parser.add_argument('--yhdr',type=int,default=77,help='ycoord header. default=77')
+    # parser.add_argument('--xyscalerhdr',type=int,default=71,help='hdr of xy scaler to divide by.default=71')
     parser.add_argument('--tracerange',type=int,nargs=2,default=[0,-1],help='Start and end trace #s. default full range')
     parser.add_argument('--numofimf',type=int,default=0,help='# of IMF to calculate. default= program decides, i.e. variable')
 
