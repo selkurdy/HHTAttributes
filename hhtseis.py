@@ -1,20 +1,12 @@
 """
-Autoencode seismic then generate:
-    encoded traces
-    decoded traces
-    difference between original and encoded -> amplitude anomaly detection
-    phase synchrony between original and encoded -> time delay anomalies
+hhtseis.py
 
-Autoencoder model can be generated on just a few traces from one inline
-and applied to the whole seismic volume
-OR
-generate autoencoder model from a few traces from each inline and apply it to 
-the rest of that inline only
+Hilbert Huang Transform using Emperical Mode Decomposition to extract
+Intrinsic Mode Functions, which are monofrequencies. 
+Instantaneous attributes are computed for each trace in the supplied segy
+and then saved in a seperate segy, resulting in 15 segy attributes.
 
-Need to test which is better.
-
-
-F:\sekdata\Bayan3d>python hhtseis.py il2270.sgy --hideplots --plottrace 500
+>python hhtseis.py il2270.sgy --hideplots --plottrace 500
 """
 import os.path
 import argparse
