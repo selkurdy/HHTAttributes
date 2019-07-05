@@ -129,39 +129,14 @@ def inst_attributes(tr,freq_sample=500,smoothwlen=11):
 
 
 
-# def process_select_traces(segyfile,start=0,end=-1,smoothwlen=11):
-#     with segyio.open(segyfile,'r') as sfn:
-#         trnum = start
-#         for tr in sfn.trace[start:end]:
-#             print(f'Processing: {trnum}')
-#             imfsout,amean,amode = emd_trace(tr)
-#             figplot = plot_imfs(imfsout,amean,amode,instf,trnum)
-#             print(f'imfsout : {imfsout.shape}')
-#             aenv1,iph1,if1 = inst_attributes(imfsout[0,:],smoothwlen=smoothwlen)
-#             if2,tif2 = inst_freq0(tr)
-#             if2 = np.pad(if2, (1,1),'edge')
-#             plot_4curves(imfsout[0,:],aenv1,if1,iph1)
-# #             plot_4curves(tr,aenv1,if2,iph1)
-#             plt.show()
-#             plt.close()
-#             trnum +=1
-
-
-
 def getcommandline():
     """Main."""
     parser = argparse.ArgumentParser(description='Hilbert Huang Transform: Empirical Mode Decomposition generating Intrinsic Mode Functions
 ')
     parser.add_argument('segyfile', help='segy file name')
-    # parser.add_argument('--xhdr',type=int,default=73,help='xcoord header.default=73')
-    # parser.add_argument('--yhdr',type=int,default=77,help='ycoord header. default=77')
-    # parser.add_argument('--xyscalerhdr',type=int,default=71,help='hdr of xy scaler to divide by.default=71')
-    parser.add_argument('--tracerange',type=int,nargs=2,default=[0,-1],help='Start and end trace #s. default full range')
+    # parser.add_argument('--tracerange',type=int,nargs=2,default=[0,-1],help='Start and end trace #s. default full range')
     parser.add_argument('--numofimf',type=int,default=0,help='# of IMF to calculate. default= program decides, i.e. variable')
-
     parser.add_argument('--ifreqsmoothwlen',type=int,default=21,help='smooth ifreq window length. default = 21')
-
-
     parser.add_argument('--plottrace',type=int,default=50000,
         help='plot increment. default=50000')
     parser.add_argument('--outdir',help='output directory,default= same dir as input')
@@ -252,7 +227,8 @@ def main():
             segyio.open(trendfname,'r+') as trndfn:
             with PdfPages(emdpdf) as pdf:
                 trnum = cmdl.tracerange[0]
-                for tr in sfn.trace[cmdl.tracerange[0]:cmdl.tracerange[1]]:
+                # for tr in sfn.trace[cmdl.tracerange[0]:cmdl.tracerange[1]]:
+                for tr in sfn.trace:
                     if trnum % cmdl.plottrace == 0:
                         print(f'Processing: {trnum}')
                     imfsout,amean,amode = emd_trace(tr)

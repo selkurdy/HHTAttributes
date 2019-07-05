@@ -52,7 +52,7 @@ def getcommandline():
     # parser.add_argument('--xhdr',type=int,default=73,help='xcoord header.default=73')
     # parser.add_argument('--yhdr',type=int,default=77,help='ycoord header. default=77')
     # parser.add_argument('--xyscalerhdr',type=int,default=71,help='hdr of xy scaler to divide by.default=71')
-    parser.add_argument('--tracerange',type=int,nargs=2,default=[0,-1],help='Start and end trace #s. default full range')
+    # parser.add_argument('--tracerange',type=int,nargs=2,default=[0,-1],help='Start and end trace #s. default full range')
     parser.add_argument('--startendslice',type=int,nargs=2,default=[500,1500],help='Start end slice. default= 500 to 1500 ms')
     parser.add_argument('--scalekind',choices=['standard','quniform','qnormal'],default='standard',
         help='Scaling kind: Standard, quantile uniform, or quantile normal. default=standard')
@@ -63,8 +63,8 @@ def getcommandline():
     parser.add_argument('--nclusters',type=int,default=5,
         help='Clustering after dimensionality reduction by umap.default=5')
     parser.add_argument('--clusterdatacsv',default=None,help='csv with cluster column. Will not UMAP and cluster. Fill zeroed segy only ')
-    parser.add_argument('--plottrace',type=int,default=50000,
-        help='plot increment. default=50000')
+    # parser.add_argument('--plottrace',type=int,default=50000,
+    #     help='plot increment. default=50000')
     parser.add_argument('--outdir',help='output directory,default= same dir as input')
     parser.add_argument('--hideplots',action='store_true',default=False,
                         help='Only save to pdf. default =show and save')
