@@ -49,10 +49,6 @@ def getcommandline():
     parser = argparse.ArgumentParser(description='Dimensionality Reduction and clustering written back to segy')
     parser.add_argument('datacsvfile',help='Previously saved data array from mlhht.py ')
     parser.add_argument('segyfile', help='segy file name to fill with clusters')
-    # parser.add_argument('--xhdr',type=int,default=73,help='xcoord header.default=73')
-    # parser.add_argument('--yhdr',type=int,default=77,help='ycoord header. default=77')
-    # parser.add_argument('--xyscalerhdr',type=int,default=71,help='hdr of xy scaler to divide by.default=71')
-    # parser.add_argument('--tracerange',type=int,nargs=2,default=[0,-1],help='Start and end trace #s. default full range')
     parser.add_argument('--startendslice',type=int,nargs=2,default=[500,1500],help='Start end slice. default= 500 to 1500 ms')
     parser.add_argument('--scalekind',choices=['standard','quniform','qnormal'],default='standard',
         help='Scaling kind: Standard, quantile uniform, or quantile normal. default=standard')
@@ -62,12 +58,10 @@ def getcommandline():
     parser.add_argument('--ncomponents',type=int,default=3,help='Projection axes. default=3')
     parser.add_argument('--nclusters',type=int,default=5,
         help='Clustering after dimensionality reduction by umap.default=5')
+    parser.add_argument('--sample',type=float,default=1,help='fraction of data of sample 0 -> 1.default=1')
+    parser.add_argument('--reducedims',action='store_true',default=False,help='Do not reduce dimensions using UMAP. default= apply UMAP')
     parser.add_argument('--clusterdatacsv',default=None,help='csv with cluster column. Will not UMAP and cluster. Fill zeroed segy only ')
-    # parser.add_argument('--plottrace',type=int,default=50000,
-    #     help='plot increment. default=50000')
     parser.add_argument('--outdir',help='output directory,default= same dir as input')
-    parser.add_argument('--hideplots',action='store_true',default=False,
-                        help='Only save to pdf. default =show and save')
 
     result = parser.parse_args()
     return result
@@ -105,59 +99,70 @@ def main():
         clusteredfname = os.path.join(dirsplit, outfn) + "_%dclstr.csv" % cmdl.nclusters
         outfsegy = os.path.join(dirsplit,outfn) +"_%dclstr.sgy" % (cmdl.nclusters)
 
+    clustering = KMeans(n_clusters=cmdl.nclusters,
+        n_init=5,
+        max_iter=300,
+        tol=1e-04,
+        random_state=1)
+
     if not cmdl.clusterdatacsv:
         # alldata = np.load(cmdl.datafile)
         alldatadf = pd.read_csv(cmdl.datacsvfile)
-        print(alldatadf.shape)
+        print(f'Input data: {alldatadf.shape}')
         # alldata = alldatadf[:,1:].values
+        smplalldatadf = alldatadf.sample(frac=cmdl.sample).copy()
+        print(f'After sampling: {smplalldatadf.shape}')
 
         if cmdl.scalekind == 'standard':
+            smplalldatasc = StandardScaler().fit_transform(smplalldatadf.iloc[:,1:].values)
             alldatasc = StandardScaler().fit_transform(alldatadf.iloc[:,1:].values)
         elif cmdl.scalekind == 'quniform':
+            smplalldatasc = QuantileTransformer(output_distribution='uniform').fit_transform(smplalldatadf.iloc[:,1:].values)
             alldatasc = QuantileTransformer(output_distribution='uniform').fit_transform(alldatadf.iloc[:,1:].values)
         else:
+            smplalldatasc = QuantileTransformer(output_distribution='normal').fit_transform(smplalldatadf.iloc[:,1:].values)
             alldatasc = QuantileTransformer(output_distribution='normal').fit_transform(alldatadf.iloc[:,1:].values)
+        if cmdl.reducedims:
+            reducer = umap.UMAP(n_neighbors=cmdl.nneighbors, min_dist=cmdl.mindistance, n_components=cmdl.ncomponents)
 
-        # alldatascdf = pd.DataFrame(alldatasc,columns=cols)
+            start_time = datetime.now()
 
-        clustering = umap.UMAP(n_neighbors=cmdl.nneighbors, min_dist=cmdl.mindistance, n_components=cmdl.ncomponents)
+            print('Start UMAP Clustering')
+            smplumap_features = reducer.fit_transform(smplalldatasc)
+            # umap_features = reducer.transform(alldatasc[:,1:])
+            print(f'umap features shape {smplumap_features.shape}')
+            end_time = datetime.now()
+            print('UMAP dimensionality Reduction Duration: {}'.format(end_time - start_time))
+            print(f'Original Labelled  shape: {ylabels.shape}  umap features shape: {smplumap_features.shape}')
 
-        start_time = datetime.now()
+            ylabels = clustering.fit_predict(smplumap_features)
+            clustering.fit(smplumap_features)
+            # ylabels = clustering.predict(alldatadf.iloc[:,1:].values)
+            fig, ax = plt.subplots(figsize=(8,6))
+            nclst = [i for i in range(cmdl.ncomponents)]
+            pltvar = itertools.combinations(nclst,2)
+            pltvarlst = list(pltvar)
+            for i in range(len(pltvarlst)):
+                ftr0 = pltvarlst[i][0]
+                ftr1 = pltvarlst[i][1]
+                print('umap feature #: {}, umap feature #: {}'.format(ftr0,ftr1))
+                plt.scatter(smplumap_features[:,ftr0],smplumap_features[:,ftr1],c=ylabels,s=2,alpha=.2)
+                plt.show()
+                plt.close()
 
-        print('Start UMAP Clustering')
-        umap_features = clustering.fit_transform(alldatasc)
-        print(f'umap features shape {umap_features.shape}')
-        end_time = datetime.now()
-        print('UMAP dimensionality Reduction Duration: {}'.format(end_time - start_time))
+        else: 
+            print(f'Start K-Means Clustering')
+            ylabels = clustering.fit_predict(alldatasc[:,1:])
+            nlabels = np.unique(ylabels)
+            # print('nlabels',nlabels)
+            print(f'Original Labelled  shape: {ylabels.shape}  ')
 
-        clustering = KMeans(n_clusters=cmdl.nclusters,
-            n_init=5,
-            max_iter=300,
-            tol=1e-04,
-            random_state=1)
-        ylabels = clustering.fit_predict(umap_features)
-        nlabels = np.unique(ylabels)
-        print('nlabels',nlabels)
-
-        print(f'Labelled  shape: {ylabels.shape}  umap features shape: {umap_features.shape}')
         # label_data = np.vstack((umap_features,ylabels))
         # np.save(npyfname)
 
         alldatadf['CLUSTER'] = ylabels
         alldatadf.to_csv(clusteredfname,index=False)
         print(f'Successfully generated {clusteredfname}')
-
-        fig, ax = plt.subplots(figsize=(8,6))
-        nclst = [i for i in range(cmdl.ncomponents)]
-        pltvar = itertools.combinations(nclst,2)
-        pltvarlst = list(pltvar)
-        for i in range(len(pltvarlst)):
-            ftr0 = pltvarlst[i][0]
-            ftr1 = pltvarlst[i][1]
-            print('umap feature #: {}, umap feature #: {}'.format(ftr0,ftr1))
-            plt.scatter(umap_features[:,ftr0],umap_features[:,ftr1],c=ylabels,s=2,alpha=.2)
-            plt.show()
-            plt.close()
 
     else:
         alldatadf = pd.read_csv(cmdl.clusterdatacsv)

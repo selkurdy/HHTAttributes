@@ -5,6 +5,7 @@ Takes one segy and generates 21 frequency envelope and phae attributes that are 
 to a npy binary file and csv file.
 
 >python mlhht.py il2270.sgy
+>python mlhht.py  bayan3d_subset2.sgy --startendslice 1000 1500 --hideplots
 """
 import os.path
 import argparse
